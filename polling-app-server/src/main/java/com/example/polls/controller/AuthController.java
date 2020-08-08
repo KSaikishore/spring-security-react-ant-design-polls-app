@@ -11,6 +11,7 @@ import com.example.polls.payload.SignUpRequest;
 import com.example.polls.repository.RoleRepository;
 import com.example.polls.repository.UserRepository;
 import com.example.polls.security.JwtTokenProvider;
+import com.example.polls.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,6 +52,9 @@ public class AuthController {
     @Autowired
     JwtTokenProvider tokenProvider;
 
+    @Autowired
+    EmailService emailService;
+
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
@@ -78,7 +82,7 @@ public class AuthController {
             return new ResponseEntity(new ApiResponse(false, "Email Address already in use!"),
                     HttpStatus.BAD_REQUEST);
         }
-
+        emailService.sendEmail(signUpRequest.getEmail());
         // Creating user's account
         User user = new User(signUpRequest.getName(), signUpRequest.getUsername(),
                 signUpRequest.getEmail(), signUpRequest.getPassword());
@@ -87,15 +91,21 @@ public class AuthController {
 
         Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
                 .orElseThrow(() -> new AppException("User Role not set."));
+        //System.out.println(userRole.getName()+" Id "+userRole.getId()+" earlier roles"+user.getRoles());
+
+        System.out.println(user.getRoles().toString() +" Joined String");
 
         user.setRoles(Collections.singleton(userRole));
 
         User result = userRepository.save(user);
 
+        System.out.println(user.getRoles().toString() +" Joined Updated String");
+
+
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath().path("/users/{username}")
                 .buildAndExpand(result.getUsername()).toUri();
-
+        System.out.println(user.getRoles()+" "+ location);
         return ResponseEntity.created(location).body(new ApiResponse(true, "User registered successfully"));
     }
 }

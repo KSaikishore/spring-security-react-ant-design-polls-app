@@ -65,6 +65,7 @@ public class PollController {
     @GetMapping("/{pollId}")
     public PollResponse getPollById(@CurrentUser UserPrincipal currentUser,
                                     @PathVariable Long pollId) {
+        //System.out.print("8888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888");
         return pollService.getPollById(pollId, currentUser);
     }
 
@@ -75,5 +76,4 @@ public class PollController {
                          @Valid @RequestBody VoteRequest voteRequest) {
         return pollService.castVoteAndGetUpdatedPoll(pollId, voteRequest, currentUser);
     }
-
 }
